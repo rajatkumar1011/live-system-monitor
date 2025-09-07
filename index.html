@@ -106,8 +106,8 @@
 
         async function updateStats() {
             try {
-                // The URL now points directly to the local Flask server
-                const response = await fetch('http://127.0.0.1:5000/api/stats');
+                // The URL is now relative, so it works when deployed.
+                const response = await fetch('/api/stats');
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }

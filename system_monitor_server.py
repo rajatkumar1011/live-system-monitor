@@ -1,29 +1,31 @@
+from flask import Flask, jsonify
+from flask_cors import CORS
 import psutil
-import datetime
-from flask import Flask, jsonify, render_template
+from datetime import datetime
+import pytz
 
-app = Flask(__name__, template_folder='.')
+app = Flask(__name__)
+CORS(app)
 
-def get_performance_metrics():
-    cpu_usage = psutil.cpu_percent(interval=0.5)
+def get_stats():
+    cpu_percent = psutil.cpu_percent(interval=1)
     memory_info = psutil.virtual_memory()
-    memory_usage = memory_info.percent
-    return cpu_usage, memory_usage
+    
+    # Get the current time and convert it to IST
+    ist = pytz.timezone('Asia/Kolkata')
+    now_ist = datetime.now(ist)
+    timestamp = now_ist.strftime('%H:%M:%S') # e.g., 16:07:15
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+    return {
+        "cpu_percent": cpu_percent,
+        "memory_percent": memory_info.percent,
+        "timestamp": timestamp
+    }
 
 @app.route('/api/stats')
-def get_stats():
-    cpu, memory = get_performance_metrics()
-    timestamp = datetime.datetime.now().strftime("%H:%M:%S")
-    return jsonify({
-        "cpu_percent": cpu,
-        "memory_percent": memory,
-        "timestamp": timestamp
-    })
+def stats():
+    return jsonify(get_stats())
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
 
